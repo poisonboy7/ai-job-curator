@@ -1,4 +1,4 @@
-
+(./AI Job Curation.png)
 
 # 🚀 AI 맞춤형 채용 큐레이션 서비스 구축 가이드
 
