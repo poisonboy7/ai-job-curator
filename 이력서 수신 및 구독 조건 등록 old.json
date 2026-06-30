@@ -1,0 +1,270 @@
+{
+  "name": "이력서 수신 및 구독 조건 등록",
+  "type": "SHARED",
+  "summary": "",
+  "description": "",
+  "tags": [],
+  "blogUrl": "",
+  "metadata": {
+    "externalId": "o2cSbRueoMosGGBA6zqH7"
+  },
+  "author": "test test",
+  "categories": [],
+  "pieces": [
+    "@activepieces/piece-webhook",
+    "@activepieces/piece-http",
+    "@activepieces/piece-store"
+  ],
+  "flows": [
+    {
+      "displayName": "이력서 수신 및 구독 조건 등록",
+      "trigger": {
+        "name": "trigger",
+        "valid": true,
+        "displayName": "Catch Webhook",
+        "nextAction": {
+          "name": "step_1",
+          "skip": false,
+          "type": "PIECE",
+          "valid": true,
+          "settings": {
+            "input": {
+              "url": "http://host.docker.internal/v1/workflows/run",
+              "body": {
+                "data": {
+                  "user": "{{trigger['body']['email']}}",
+                  "inputs": {
+                    "resume_text": "{{trigger['body']['resume']['text_content']}}"
+                  },
+                  "response_mode": "blocking"
+                }
+              },
+              "method": "POST",
+              "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer app-RPANjQxOopkcXsajdEcXZE9Z"
+              },
+              "authType": "NONE",
+              "body_type": "json",
+              "use_proxy": false,
+              "authFields": {},
+              "failureMode": "continue_none",
+              "queryParams": {},
+              "proxy_settings": {},
+              "followRedirects": false,
+              "response_is_binary": false
+            },
+            "pieceName": "@activepieces/piece-http",
+            "actionName": "send_request",
+            "sampleData": {},
+            "pieceVersion": "0.11.10",
+            "propertySettings": {
+              "url": {
+                "type": "MANUAL"
+              },
+              "body": {
+                "type": "MANUAL",
+                "schema": {
+                  "data": {
+                    "type": "JSON",
+                    "required": true,
+                    "displayName": "JSON Body"
+                  }
+                }
+              },
+              "method": {
+                "type": "MANUAL"
+              },
+              "headers": {
+                "type": "MANUAL"
+              },
+              "timeout": {
+                "type": "MANUAL"
+              },
+              "authType": {
+                "type": "MANUAL"
+              },
+              "body_type": {
+                "type": "MANUAL"
+              },
+              "use_proxy": {
+                "type": "MANUAL"
+              },
+              "authFields": {
+                "type": "MANUAL",
+                "schema": {}
+              },
+              "failureMode": {
+                "type": "MANUAL"
+              },
+              "queryParams": {
+                "type": "MANUAL"
+              },
+              "proxy_settings": {
+                "type": "MANUAL",
+                "schema": {}
+              },
+              "followRedirects": {
+                "type": "MANUAL"
+              },
+              "response_is_binary": {
+                "type": "MANUAL"
+              }
+            },
+            "errorHandlingOptions": {
+              "retryOnFailure": {
+                "value": false
+              },
+              "continueOnFailure": {
+                "value": false
+              }
+            }
+          },
+          "nextAction": {
+            "name": "step_2",
+            "skip": false,
+            "type": "CODE",
+            "valid": true,
+            "settings": {
+              "input": {
+                "dify_response": "{{step_1['body']['data']['outputs']['text']}}"
+              },
+              "sampleData": {},
+              "sourceCode": {
+                "code": "exports.code = async (inputs) => {\n    let rawText = inputs.dify_response;\n    \n    // 1. DeepSeek의 <think>...</think> 추론 영역 강제 제거\n    rawText = rawText.replace(/<think>[\\s\\S]*?<\\/think>/g, \"\").trim();\n    \n    // 2. 마크다운 ```json 코드 블록 정제\n    rawText = rawText.replace(/```json/g, \"\").replace(/```/g, \"\").trim();\n    \n    try {\n        const parsed = JSON.parse(rawText);\n        const job = parsed.primary_job || \"개발자\";\n        let jobsArray = [];\n        if (Array.isArray(job)) {\n            jobsArray = job;\n        } else if (typeof job === 'string') {\n            jobsArray = job.split(',').map(s => s.trim()).filter(Boolean);\n        }\n        if (jobsArray.length === 0) {\n            jobsArray = [\"개발자\"];\n        }\n        \n        return {\n            primary_job: jobsArray[0],\n            primary_jobs: jobsArray,\n            core_skills: parsed.core_skills || [],\n            ai_keywords: parsed.ai_keywords || []\n        };\n    } catch (e) {\n        return {\n            primary_job: \"개발자\",\n            primary_jobs: [\"개발자\"],\n            core_skills: [],\n            ai_keywords: [\"AI\"]\n        };\n    }\n};",
+                "packageJson": "{}"
+              },
+              "errorHandlingOptions": {
+                "retryOnFailure": {
+                  "value": false
+                },
+                "continueOnFailure": {
+                  "value": false
+                }
+              }
+            },
+            "nextAction": {
+              "name": "step_3",
+              "skip": false,
+              "type": "PIECE",
+              "valid": true,
+              "settings": {
+                "input": {
+                  "key": "user_{{trigger['body']['email']}}",
+                  "value": "{\n  \"email\": \"{{trigger['body']['email']}}\",\n  \"address\": \"{{trigger['body']['address']}}\",\n  \"latitude\": \"{{trigger['body']['latitude']}}\",\n  \"longitude\": \"{{trigger['body']['longitude']}}\",\n  \"max_distance\": \"{{trigger['body']['max_distance_km']}}\",\n  \"career\": \"{{trigger['body']['career']}}\",\n  \"education\": \"{{trigger['body']['education']}}\",\n  \"primary_job\": \"{{step_2['primary_job']}}\",\n  \"primary_jobs\": \"{{step_2['primary_jobs']}}\",\n  \"core_skills\": \"{{step_2['core_skills']}}\",\n  \"ai_keywords\": \"{{step_2['ai_keywords']}}\"\n}",
+                  "store_scope": "COLLECTION"
+                },
+                "pieceName": "@activepieces/piece-store",
+                "actionName": "put",
+                "sampleData": {},
+                "pieceVersion": "0.6.15",
+                "propertySettings": {
+                  "key": {
+                    "type": "MANUAL"
+                  },
+                  "value": {
+                    "type": "MANUAL"
+                  },
+                  "store_scope": {
+                    "type": "MANUAL"
+                  }
+                },
+                "errorHandlingOptions": {
+                  "retryOnFailure": {
+                    "value": false
+                  },
+                  "continueOnFailure": {
+                    "value": false
+                  }
+                }
+              },
+              "nextAction": {
+                "name": "step_4",
+                "type": "PIECE",
+                "valid": true,
+                "settings": {
+                  "input": {
+                    "key": "subscriber_list",
+                    "value": [
+                      "{{trigger['body']['email']}}"
+                    ],
+                    "store_scope": "COLLECTION",
+                    "ignore_if_exists": false
+                  },
+                  "pieceName": "@activepieces/piece-store",
+                  "actionName": "add_to_list",
+                  "sampleData": {},
+                  "pieceVersion": "0.6.15",
+                  "propertySettings": {
+                    "key": {
+                      "type": "MANUAL"
+                    },
+                    "value": {
+                      "type": "MANUAL"
+                    },
+                    "store_scope": {
+                      "type": "MANUAL"
+                    },
+                    "ignore_if_exists": {
+                      "type": "MANUAL"
+                    }
+                  },
+                  "errorHandlingOptions": {
+                    "retryOnFailure": {
+                      "value": false
+                    },
+                    "continueOnFailure": {
+                      "value": false
+                    }
+                  }
+                },
+                "displayName": "Add To List",
+                "lastUpdatedDate": "2026-06-23T06:38:54.864Z"
+              },
+              "displayName": "Put",
+              "lastUpdatedDate": "2026-06-23T06:38:54.864Z"
+            },
+            "displayName": "Code",
+            "lastUpdatedDate": "2026-06-23T06:38:54.864Z"
+          },
+          "displayName": "Send HTTP request",
+          "lastUpdatedDate": "2026-06-23T06:38:54.864Z"
+        },
+        "lastUpdatedDate": "2026-06-23T06:38:54.864Z",
+        "type": "PIECE_TRIGGER",
+        "settings": {
+          "sampleData": {},
+          "propertySettings": {
+            "authType": {
+              "type": "MANUAL"
+            },
+            "authFields": {
+              "type": "MANUAL",
+              "schema": {}
+            },
+            "liveMarkdown": {
+              "type": "MANUAL"
+            },
+            "syncMarkdown": {
+              "type": "MANUAL"
+            },
+            "testMarkdown": {
+              "type": "MANUAL"
+            }
+          },
+          "pieceName": "@activepieces/piece-webhook",
+          "pieceVersion": "0.1.35",
+          "triggerName": "catch_webhook",
+          "input": {
+            "authType": "none",
+            "authFields": {}
+          }
+        }
+      },
+      "valid": true,
+      "schemaVersion": "20",
+      "notes": []
+    }
+  ],
+  "status": "PUBLISHED"
+}

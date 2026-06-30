@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서비스 안내 (Service Info)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f9fafb;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 32px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        h2 {
+            color: #111827;
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 22px;
+        }
+        p {
+            color: #4b5563;
+            font-size: 15px;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+        .btn {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        .btn:hover {
+            background-color: #dc2626;
+        }
+        .btn:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="status-icon" class="icon">✉️</div>
+    <h2 id="title">주기적인 이력서 매칭 뉴스레터 수신 거부</h2>
+    <p id="description">버튼을 누르시면 가입자 데이터베이스 명단에서 해당 이메일 정보가 완전히 영구 삭제되며, 더 이상 자동 메일이 발송되지 않습니다.</p>
+    <button id="action-btn" class="btn" onclick="processUnsubscribe()">확인하기</button>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const email = urlParams.get('email');
+
+    console.log("[프론트엔드 디버그] 대상 타겟 이메일:", email);
+
+    if (!email) {
+        document.getElementById('title').textContent = "잘못된 접근입니다";
+        document.getElementById('description').textContent = "메일함의 링크를 통해 올바른 형식으로 다시 접속해 주세요.";
+        document.getElementById('action-btn').style.display = 'none';
+        document.getElementById('status-icon').textContent = "⚠️";
+    }
+
+    async function processUnsubscribe() {
+        const actionBtn = document.getElementById('action-btn');
+        const titleEl = document.getElementById('title');
+        const descEl = document.getElementById('description');
+        const iconEl = document.getElementById('status-icon');
+
+        actionBtn.disabled = true;
+        actionBtn.textContent = "처리 중...";
+
+        try {
+            const response = await fetch('/api/sync', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: email,
+                    subscribe: false
+                })
+            });
+
+            // Activepieces 7번 노드가 던진 JSON 바디 수신
+            const data = await response.json().catch(() => ({}));
+            console.log("[프론트엔드 디버그] 서버에서 온 데이터:", data);
+
+            const messageText = data.message || "";
+
+            if (response.ok) {
+                // 💡 [핵심 검증 분기 개통] 서버 상태가 200이더라도 메시지에 가입 실패/미달 내용이 있으면 에러 화면으로 강제 유도
+                if (messageText.includes("미달") || messageText.includes("실패") || data.status === "rejected") {
+                    iconEl.textContent = "❌";
+                    titleEl.textContent = "가입 제한 안내";
+                } else {
+                    iconEl.textContent = "✅";
+                    titleEl.textContent = "구독 해제 완료";
+                }
+                
+                descEl.textContent = messageText; 
+                actionBtn.style.display = 'none';
+            } else {
+                throw new Error("서버 연동 에러");
+            }
+
+        } catch (error) {
+            console.error("[프론트엔드 디버그] 에러 로깅:", error);
+            iconEl.textContent = "❌";
+            titleEl.textContent = "처리 실패";
+            descEl.textContent = "서버 통신 중 오류가 발생했습니다. 잠시 후 메일함의 링크를 다시 클릭해 주세요.";
+            actionBtn.disabled = false;
+            actionBtn.textContent = "다시 시도하기";
+        }
+    }
+</script>
+
+</body>
+</html>
