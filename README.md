@@ -78,7 +78,7 @@ AI와 크롤러, 이메일을 하나로 이어주는 공장 레일입니다.
    ```bash
    ngrok authtoken 본인_토큰문자열
    ```
-3. 아래 명령어를 쳐서 Activepieces(8080 포트)와 연결된 터널을 엽니다.
+3. 아래 명령어를 쳐서 Activepieces(8080 포트 or 셋팅한 포트 번호)와 연결된 터널을 엽니다.
    ```bash
    ngrok http 8080
    ```
