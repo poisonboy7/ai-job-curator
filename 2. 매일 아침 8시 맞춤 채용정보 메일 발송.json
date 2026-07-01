@@ -1,0 +1,305 @@
+﻿{
+  "name": "2. 매일 아침 8시 맞춤 채용정보 메일 발송",
+  "type": "SHARED",
+  "summary": "",
+  "description": "",
+  "tags": [],
+  "blogUrl": "",
+  "metadata": {
+    "externalId": "x9GEEpj5lgD05NdN13kMh"
+  },
+  "author": "test test",
+  "categories": [],
+  "pieces": [
+    "@activepieces/piece-schedule",
+    "@activepieces/piece-store",
+    "@activepieces/piece-gmail"
+  ],
+  "flows": [
+    {
+      "displayName": "2. 매일 아침 8시 맞춤 채용정보 메일 발송",
+      "trigger": {
+        "name": "trigger",
+        "valid": true,
+        "displayName": "Every Day",
+        "nextAction": {
+          "name": "step_1",
+          "skip": false,
+          "type": "PIECE",
+          "valid": true,
+          "settings": {
+            "input": {
+              "key": "subscriber_list",
+              "store_scope": "COLLECTION"
+            },
+            "pieceName": "@activepieces/piece-store",
+            "actionName": "get",
+            "sampleData": {},
+            "pieceVersion": "0.6.15",
+            "propertySettings": {
+              "key": {
+                "type": "MANUAL"
+              },
+              "store_scope": {
+                "type": "MANUAL"
+              },
+              "defaultValue": {
+                "type": "MANUAL"
+              }
+            },
+            "errorHandlingOptions": {
+              "retryOnFailure": {
+                "value": false
+              },
+              "continueOnFailure": {
+                "value": false
+              }
+            }
+          },
+          "nextAction": {
+            "name": "step_6",
+            "skip": false,
+            "type": "CODE",
+            "valid": true,
+            "settings": {
+              "input": {
+                "list": "{{step_1}}"
+              },
+              "sampleData": {},
+              "sourceCode": {
+                "code": "exports.code = async (inputs) => {\n    let list = null;\n\n    // 코드 노드에 입력된 모든 변수를 하나씩 뒤집니다.\n    for (const key in inputs) {\n        let val = inputs[key];\n        \n        // 1. 문자열로 들어온 경우 JSON 배열 파싱 시도\n        if (typeof val === 'string') {\n            try {\n                val = JSON.parse(val);\n            } catch (e) {}\n        }\n        \n        // 2. 바로 배열 형태를 찾은 경우 채택\n        if (Array.isArray(val)) {\n            list = val;\n            break;\n        }\n        \n        // 3. Storage Get 결과 객체 속에서 배열을 찾은 경우 채택\n        if (val && typeof val === 'object') {\n            if (Array.isArray(val.value)) {\n                list = val.value;\n                break;\n            }\n            if (val.key && val.value) {\n                let innerVal = val.value;\n                if (typeof innerVal === 'string') {\n                    try { innerVal = JSON.parse(innerVal); } catch(e) {}\n                }\n                if (Array.isArray(innerVal)) {\n                    list = innerVal;\n                    break;\n                }\n            }\n        }\n    }\n\n    // 배열을 찾지 못한 경우 빈 배열로 세팅\n    if (!list || !Array.isArray(list)) {\n        list = [];\n    }\n\n    // 중복 제거 처리\n    const uniqueList = [...new Set(list)];\n    \n    return { list: uniqueList };\n};",
+                "packageJson": "{}"
+              },
+              "errorHandlingOptions": {
+                "retryOnFailure": {
+                  "value": false
+                },
+                "continueOnFailure": {
+                  "value": false
+                }
+              }
+            },
+            "nextAction": {
+              "name": "step_7",
+              "skip": false,
+              "type": "PIECE",
+              "valid": true,
+              "settings": {
+                "input": {
+                  "key": "subscriber_list",
+                  "value": "{{step_6['list']}}",
+                  "store_scope": "COLLECTION"
+                },
+                "pieceName": "@activepieces/piece-store",
+                "actionName": "put",
+                "sampleData": {},
+                "pieceVersion": "0.6.15",
+                "propertySettings": {
+                  "key": {
+                    "type": "MANUAL"
+                  },
+                  "value": {
+                    "type": "MANUAL"
+                  },
+                  "store_scope": {
+                    "type": "MANUAL"
+                  }
+                },
+                "errorHandlingOptions": {
+                  "retryOnFailure": {
+                    "value": false
+                  },
+                  "continueOnFailure": {
+                    "value": false
+                  }
+                }
+              },
+              "nextAction": {
+                "name": "step_2",
+                "type": "LOOP_ON_ITEMS",
+                "valid": true,
+                "settings": {
+                  "items": "{{step_6['list']}}",
+                  "sampleData": {}
+                },
+                "displayName": "Loop on Items",
+                "firstLoopAction": {
+                  "name": "step_3",
+                  "skip": false,
+                  "type": "PIECE",
+                  "valid": true,
+                  "settings": {
+                    "input": {
+                      "key": "user_{{step_2['item']}}",
+                      "store_scope": "COLLECTION"
+                    },
+                    "pieceName": "@activepieces/piece-store",
+                    "actionName": "get",
+                    "sampleData": {},
+                    "pieceVersion": "0.6.15",
+                    "propertySettings": {
+                      "key": {
+                        "type": "MANUAL"
+                      },
+                      "store_scope": {
+                        "type": "MANUAL"
+                      },
+                      "defaultValue": {
+                        "type": "MANUAL"
+                      }
+                    },
+                    "errorHandlingOptions": {
+                      "retryOnFailure": {
+                        "value": false
+                      },
+                      "continueOnFailure": {
+                        "value": false
+                      }
+                    }
+                  },
+                  "nextAction": {
+                    "name": "step_4",
+                    "skip": false,
+                    "type": "CODE",
+                    "valid": true,
+                    "settings": {
+                      "input": {
+                        "email": "{{step_2['item']}}",
+                        "user_data": "{{step_3}}"
+                      },
+                      "sampleData": {},
+                      "sourceCode": {
+                        "code": "const axios = require('axios');\nconst cheerio = require('cheerio');\n\n// 만능 재귀적 키-값 추출기\nfunction findValueByKey(obj, targetKey) {\n    if (!obj || typeof obj !== 'object') return undefined;\n    if (obj[targetKey] !== undefined) return obj[targetKey];\n    for (const key in obj) {\n        const val = obj[key];\n        if (typeof val === 'string') {\n            try {\n                const fixedVal = val.replace(/([a-zA-Z0-9_]+)\\s*:/g, '\"$1\":').replace(/'/g, '\"');\n                const parsed = JSON.parse(fixedVal);\n                if (parsed && typeof parsed === 'object') {\n                    const found = findValueByKey(parsed, targetKey);\n                    if (found !== undefined) return found;\n                }\n            } catch (e) {\n                const cleanVal = val.replace(/\\\\\"/g, '\"').replace(/\\\\'/g, \"'\");\n                const regex = new RegExp(`['\"]?${targetKey}['\"]?\\\\s*:\\\\s*([^\\\\n,]+)`);\n                const match = cleanVal.match(regex);\n                if (match) {\n                    const strVal = match[1].replace(/[\\[\\]'\"{}\\\\\\\\]/g, '').trim();\n                    if (strVal) return strVal;\n                }\n            }\n        } else if (val && typeof val === 'object') {\n            const found = findValueByKey(val, targetKey);\n            if (found !== undefined) return found;\n        }\n    }\n    return undefined;\n}\n\n// 4대 플랫폼 크롤러 함수\nasync function scrapeWorknet(keyword) {\n    const encodedKeyword = encodeURIComponent(keyword);\n    const url = `https://www.work.go.kr/empInfo/empInfoSrch/list/dtlEmpSrchList.do?searchOn=Y&srcKeyword=${encodedKeyword}`;\n    const headers = { \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\" };\n    const jobs = [];\n    try {\n        const response = await axios.get(url, { headers, timeout: 6000 });\n        const $ = cheerio.load(response.data);\n        $(\"table.board-list tbody tr\").each((i, el) => {\n            const row = $(el);\n            const company = row.find(\"a.cp_name\").text().trim() || \"회사명 비공개\";\n            const titleElement = row.find(\".cp-info a\").first();\n            if (!titleElement.length) return;\n            const title = titleElement.text().trim();\n            const link = titleElement.attr('href')?.startsWith('http') ? titleElement.attr('href') : \"https://www.work24.go.kr\" + titleElement.attr('href');\n            const ems = row.find(\".cp-info em\");\n            const address = ems.length ? $(ems[ems.length - 1]).text().trim() : \"지역무관\";\n            jobs.push({ source: \"고용24\", company, title, address, career: $(ems[0]).text().trim() || \"관계없음\", education: \"무관\", detailText: row.text(), url: link });\n        });\n    } catch (e) {}\n    return jobs;\n}\n\nasync function scrapeIncruit(keyword) {\n    // 💡 [수정] 불필요해진 EUC-KR 강제 변환 함수를 제거하고 순정 UTF-8 규격으로 복구\n    const encodedKeyword = encodeURIComponent(keyword);\n    const url = `https://search.incruit.com/list/search.asp?col=job&kw=${encodedKeyword}`;\n    const headers = { \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\" };\n    const jobs = [];\n    try {\n        const response = await axios.get(url, { headers, responseType: 'arraybuffer', timeout: 6000 });\n        const decoder = new TextDecoder('euc-kr');\n        const $ = cheerio.load(decoder.decode(response.data));\n        $(\"li.c_col\").each((i, el) => {\n            const col = $(el);\n            const company = col.find(\"div.cell_first a\").first().text().trim() || \"회사명 비공개\";\n            const jobAnchor = col.find(\"div.cell_mid a\").first();\n            if (!jobAnchor.length) return;\n            const title = jobAnchor.text().trim();\n            const link = jobAnchor.attr('href')?.startsWith('http') ? jobAnchor.attr('href') : \"https://job.incruit.com\" + jobAnchor.attr('href');\n            \n            // 💡 [핵심 버그 패치] .split(' ')[0] 을 제거하여 \"서울 강남구\" 전체 텍스트를 온전히 추출\n            const address = col.find(\".cl_md\").text().trim() || \"지역무관\";\n            \n            jobs.push({ source: \"인크루트\", company, title, address, career: \"관계없음\", education: \"무관\", detailText: col.text(), url: link });\n        });\n    } catch (e) {}\n    return jobs;\n}\n\nasync function scrapeSaramin(keyword) {\n    const encodedKeyword = encodeURIComponent(keyword);\n    const url = `https://www.saramin.co.kr/zf_user/search?searchword=${encodedKeyword}&searchType=search&recruitPageCount=40`;\n    const headers = { \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\", \"Referer\": \"https://www.saramin.co.kr/\" };\n    const jobs = [];\n    try {\n        const response = await axios.get(url, { headers, timeout: 6000 });\n        const $ = cheerio.load(response.data);\n        $(\".item_recruit\").each((i, el) => {\n            const item = $(el);\n            const company = item.find(\".corp_name a\").text().trim() || \"회사명 비공개\";\n            const jobAnchor = item.find(\".job_tit a\");\n            if (!jobAnchor.length) return;\n            const title = jobAnchor.text().trim();\n            const link = jobAnchor.attr('href')?.startsWith('http') ? jobAnchor.attr('href') : \"https://www.saramin.co.kr\" + jobAnchor.attr('href');\n            let address = \"지역무관\";\n            let career = \"관계없음\";\n            item.find(\".job_condition span\").each((idx, span) => {\n                const text = $(span).text().trim();\n                if ([\"서울\", \"경기\", \"인천\", \"충남\", \"부산\", \"대구\", \"전북\", \"경남\", \"경북\", \"전남\", \"충북\", \"세종\", \"울산\", \"대전\", \"광주\", \"제주\", \"강원\"].some(loc => text.includes(loc))) {\n                    address = text;\n                } else if (text.includes(\"경력\") || text.includes(\"신입\")) {\n                    career = text;\n                }\n            });\n            jobs.push({ source: \"사람인\", company, title, address, career, education: \"학력무관\", detailText: item.text(), url: link });\n        });\n    } catch (e) {}\n    return jobs;\n}\n\nasync function scrapeJobKorea(keyword) {\n    const encodedKeyword = encodeURIComponent(keyword);\n    const url = `https://www.jobkorea.co.kr/Search/?stext=${encodedKeyword}`;\n    const headers = { \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64)\" };\n    const jobs = [];\n    try {\n        const response = await axios.get(url, { headers, timeout: 6000 });\n        const $ = cheerio.load(response.data);\n        $(\"div.rounded-2xl\").each((i, el) => {\n            const card = $(el);\n            const titleAnchor = card.find(\"div.mb-0\\\\.5 a\").first();\n            if (!titleAnchor.length) return;\n            const title = titleAnchor.text().trim();\n            const link = titleAnchor.attr(\"href\")?.startsWith(\"http\") ? titleAnchor.attr(\"href\") : \"https://www.jobkorea.co.kr\" + titleAnchor.attr(\"href\");\n            const company = card.find(\".text-typo-b2-16\").first().text().trim() || \"회사명 비공개\";\n            const address = card.find(\".text-typo-b4-14\").first().text().trim() || \"지역무관\";\n            jobs.push({ source: \"잡코리아\", company, title, address, career: \"경력무관\", education: \"학력무관\", detailText: card.text(), url: link });\n        });\n    } catch (e) {}\n    return jobs;\n}\n\n// ==========================================\n// 메인 비즈니스 로직 실행부 \n// ==========================================\nexports.code = async (inputs) => {\n    let jobsList = findValueByKey(inputs, 'primary_jobs') || findValueByKey(inputs, 'primary_job');\n    if (typeof jobsList === 'string') jobsList = jobsList.replace(/[\\[\\]'\"]/g, '').trim();\n    if (jobsList && !Array.isArray(jobsList)) jobsList = [jobsList];\n    if (jobsList.length === 1 && jobsList[0].includes(',')) jobsList = jobsList[0].split(',').map(s => s.trim()).filter(Boolean);\n    \n    if (!jobsList || jobsList.length === 0 || jobsList[0] === '') {\n    throw new Error(\"🚨 치명적 에러: 직무 키워드를 추출하지 못했습니다. 가짜 공고 발송을 차단하기 위해 스크래퍼를 강제 종료합니다.\");\n    }\n    let rawKeywords = jobsList;\n    const keywords = rawKeywords.map(kw => kw.trim());\n    \n    const currentUserEmail = findValueByKey(inputs, 'email') || '';\n    const userRawAddress = findValueByKey(inputs, 'address') || '';\n    \n    let regionKeyword = \"\";\n    if (userRawAddress) {\n        const parts = userRawAddress.split(' ');\n        let targetPart = parts.length > 1 ? parts[1] : parts[0];\n        regionKeyword = targetPart.replace(/(시|구|군)$/, ''); \n    }\n\n    const distVal = findValueByKey(inputs, 'max_distance') || findValueByKey(inputs, 'max_distance_km');\n    const maxDistance = parseFloat(distVal) || 20.0; \n    const requiredCareer = findValueByKey(inputs, 'career') || '관계없음';\n    const requiredEducation = findValueByKey(inputs, 'education') || '학력무관';\n\n    const searchQueries = keywords.map(kw => regionKeyword ? `${kw} ${regionKeyword}` : kw);\n\n    const crawlPromises = [];\n    for (const query of searchQueries) {\n        crawlPromises.push(scrapeWorknet(query));\n        crawlPromises.push(scrapeIncruit(query));\n        crawlPromises.push(scrapeSaramin(query));\n        crawlPromises.push(scrapeJobKorea(query));\n    }\n    const allResults = await Promise.all(crawlPromises);\n    const combinedJobs = allResults.flat();\n\n    const seen = new Set();\n    const uniqueCombinedJobs = combinedJobs.filter(j => {\n        const duplicateKey = `${j.company}_${j.title}`;\n        if (seen.has(duplicateKey)) return false;\n        seen.add(duplicateKey);\n        return true;\n    });\n\n    const matchedWorknet = [];\n    const matchedIncruit = [];\n    const matchedSaramin = [];\n    const matchedJobkorea = [];\n    const aiKeywords = ['ai', '인공지능', '러닝', 'gpt', 'llm', '머신러닝', '딥러닝'];\n\n    const designKeywords = ['디자이너', '디자인', 'ui', 'ux', '시각', '콘텐츠', '그래픽', '인턴십'];\n    const developerKeywords = ['엔지니어', '개발자', '기획자', 'developer', 'engineer', '퍼블리셔', 'publisher', '백엔드', 'backend', '클라우드', 'cloud', '운영'];\n\n    for (const j of uniqueCombinedJobs) {\n        const jobAddress = j.address;\n        const titleLower = j.title.toLowerCase();\n\n        const isDesignJob = designKeywords.some(k => titleLower.includes(k));\n        const isDevOrPlannerJob = developerKeywords.some(k => titleLower.includes(k));\n        \n        // 직무 필터링: '디자인' 키워드가 들어올 때만 작동하도록 제한하여, \n        // Java, 백엔드 등 타 직무 검색 시에는 필터가 오작동하지 않고 패스되도록 설계\n        if (keywords.some(kw => kw.includes('디자인')) && (!isDesignJob || isDevOrPlannerJob)) {\n            continue; \n        }\n\n        const isRemote = jobAddress.includes(\"지역무관\") || jobAddress.includes(\"재택\") || jobAddress.includes(\"전국\") || jobAddress.includes(\"전역\") || jobAddress.includes(\"전체\");\n        \n        // 💡 [인크루트 주소 온전 반영] 이제 jobAddress에 \"강남구\"가 온전히 살아있으므로 정상 통과됨\n        if (!isRemote && regionKeyword && !jobAddress.includes(regionKeyword)) {\n            continue; \n        }\n\n        if (requiredCareer !== \"관계없음\") {\n            if (requiredCareer === \"신입\" && !j.career.includes(\"신입\") && !j.career.includes(\"무관\")) continue;\n            if (requiredCareer === \"경력\" && !j.career.includes(\"경력\") && !j.career.includes(\"년\")) continue;\n        }\n\n        if (requiredEducation !== \"학력무관\") {\n            const detail = (j.detailText || \"\").replace(/\\s/g, ''); // 띄어쓰기 무시하고 검사\n            const isAnyEdu = detail.includes(\"학력무관\") || detail.includes(\"무관\");\n            \n            if (!isAnyEdu) {\n                if (requiredEducation === \"고졸\") {\n                    // 고졸자는 '대졸', '초대졸', '전문대' 단어가 들어간 (고학력 요구) 공고 지원 불가\n                    if (detail.includes(\"대졸\") || detail.includes(\"초대졸\") || detail.includes(\"전문대\") || detail.includes(\"대학교\") || detail.includes(\"석사\")) {\n                        continue;\n                    }\n                } else if (requiredEducation === \"대졸23\") {\n                    // 2,3년제 졸업자는 '4년제', '석사' 단어가 들어간 공고 지원 불가\n                    if (detail.includes(\"4년\") || detail.includes(\"석사\")) {\n                        continue;\n                    }\n                }\n            }\n        }\n\n        const isAiRelated = aiKeywords.some(kw => titleLower.includes(kw) || (j.detailText && j.detailText.toLowerCase().includes(kw)));\n        const displayTitle = isAiRelated ? `🔥 [AI우대] ${j.title}` : j.title;\n\n        const processedJob = {\n            company: j.company,\n            title: displayTitle,\n            address: j.address,\n            career: j.career,\n            education: j.education,\n            isAi: isAiRelated,\n            distance: isRemote ? \"재택/지역무관\" : `위치 일치`,\n            url: j.url\n        };\n\n        if (j.source === \"고용24\") matchedWorknet.push(processedJob);\n        else if (j.source === \"인크루트\") matchedIncruit.push(processedJob);\n        else if (j.source === \"사람인\") matchedSaramin.push(processedJob);\n        else if (j.source === \"잡코리아\") matchedJobkorea.push(processedJob);\n    }\n\n    const getTopFive = (jobs) => jobs.sort((a, b) => (b.isAi ? 1 : 0) - (a.isAi ? 1 : 0)).slice(0, 5);\n\n    const displayWorknet = getTopFive(matchedWorknet);\n    const displayIncruit = getTopFive(matchedIncruit);\n    const displaySaramin = getTopFive(matchedSaramin);\n    const displayJobkorea = getTopFive(matchedJobkorea);\n\n    const buildHtmlList = (jobs) => {\n        let listHtml = \"\";\n        for (const j of jobs) {\n            listHtml += `\n            <li style=\"margin-bottom: 10px; list-style: none; padding: 12px; border-bottom: 1px solid #f3f4f6; font-family: sans-serif; background-color: #fafafa; border-radius: 6px;\">\n                <strong style=\"color: #4f46e5; font-size: 1.2em;\">${j.company}</strong><br>\n                <a href=\"${j.url}\" target=\"_blank\" style=\"text-decoration: none; color: #1e293b; font-weight: bold; font-size: 1.15em; line-height: 1.4; display: inline-block; margin-top: 2px;\">${j.title}</a><br>\n                <span style=\"color: #64748b; font-size: 1.0em; display: inline-block; margin-top: 4px;\">📍 ${j.address} | 💼 ${j.career}</span>\n            </li>`;\n        }\n        return listHtml;\n    };\n\n    const worknetListHtml = buildHtmlList(displayWorknet);\n    const incruitListHtml = buildHtmlList(displayIncruit);\n    const saraminListHtml = buildHtmlList(displaySaramin);\n    const jobkoreaListHtml = buildHtmlList(displayJobkorea);\n\n    const totalCount = matchedWorknet.length + matchedIncruit.length + matchedSaramin.length + matchedJobkorea.length;\n    \n    const searchCombo = searchQueries[0];\n    const encodedKW = encodeURIComponent(searchCombo);\n    \n    const worknetSearchLink = `https://www.work.go.kr/empInfo/empInfoSrch/list/dtlEmpSrchList.do?searchOn=Y&srcKeyword=${encodedKW}`;\n    const incruitSearchLink = `https://search.incruit.com/list/search.asp?col=job&kw=${encodedKW}`;\n    const saraminSearchLink = `https://www.saramin.co.kr/zf_user/search?searchword=${encodedKW}`;\n    const jobkoreaSearchLink = `https://www.jobkorea.co.kr/Search/?stext=${encodedKW}`;\n\n    const myVercelDomain = \"project-alicetest1.vercel.app\";\n    const unsubscribeLink = `https://${myVercelDomain}/unsubscribe.html?email=${encodeURIComponent(currentUserEmail)}`;\n    const modifyLink = `https://${myVercelDomain}`;\n\n    let mailBody = `\n    <div style=\"font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 15px; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);\">\n        <h2 style=\"color: #0f172a; border-bottom: 2px solid #4f46e5; padding-bottom: 10px; margin-top: 0; font-size: 1.45em;\">📢 AI 채용 큐레이션 데일리 리포트</h2>\n        \n        <p style=\"color: #475569; font-size: 1.1em; line-height: 1.5; margin-bottom: 20px;\">\n            AI 분석 직무 키워드 [<strong>${keywords.join(', ')}</strong>] 및 희망 주소 [<strong>${userRawAddress}</strong>] 기준 <strong>반경 ${maxDistance}km 이내</strong> 추천 공고입니다. (총 <strong>${totalCount}건</strong> 매칭 완료)\n        </p>\n        \n        <div style=\"margin-bottom: 20px; font-size: 1.05em; color: #475569; font-weight: bold;\">\n            🔵 워크넷: ${matchedWorknet.length}건 | 🟢 인크루트: ${matchedIncruit.length}건 | 🟠 사람인: ${matchedSaramin.length}건 | 🟡 잡코리아: ${matchedJobkorea.length}건\n        </div>\n\n        <div id=\"worknet-section\" style=\"margin-bottom: 30px; border-top: 1px solid #e2e8f0; padding-top: 20px;\">\n            <h3 style=\"color: #1e40af; background-color: #eff6ff; padding: 8px 12px; border-radius: 6px; font-size: 1.2em; margin-top: 0; margin-bottom: 15px; border-left: 4px solid #3b82f6;\">🔵 고용24 (워크넷) 추천 공고 (상위 5개)</h3>\n            ${worknetListHtml ? `<ul style=\"padding: 0; margin: 0;\">${worknetListHtml}</ul>` : `<p style=\"color: #94a3b8; font-size: 1.0em; margin: 0; padding: 12px;\">조건 매칭 공고가 없습니다.</p>`}\n            <div style=\"text-align: center; margin-top: 15px;\">\n                <a href=\"${worknetSearchLink}\" target=\"_blank\" style=\"display: inline-block; padding: 8px 16px; background-color: #3b82f6; color: white; text-decoration: none; font-weight: bold; font-size: 1.0em; border-radius: 6px;\">👉 고용24 결과 전체 보기</a>\n            </div>\n        </div>\n\n        <div id=\"incruit-section\" style=\"margin-bottom: 30px; border-top: 1px solid #e2e8f0; padding-top: 20px;\">\n            <h3 style=\"color: #065f46; background-color: #ecfdf5; padding: 8px 12px; border-radius: 6px; font-size: 1.2em; margin-top: 0; margin-bottom: 15px; border-left: 4px solid #10b981;\">🟢 인크루트 추천 공고 (상위 5개)</h3>\n            ${incruitListHtml ? `<ul style=\"padding: 0; margin: 0;\">${incruitListHtml}</ul>` : `<p style=\"color: #94a3b8; font-size: 1.0em; margin: 0; padding: 12px;\">조건 매칭 공고가 없습니다.</p>`}\n            <div style=\"text-align: center; margin-top: 15px;\">\n                <a href=\"${incruitSearchLink}\" target=\"_blank\" style=\"display: inline-block; padding: 8px 16px; background-color: #10b981; color: white; text-decoration: none; font-weight: bold; font-size: 1.0em; border-radius: 6px;\">👉 인크루트 결과 전체 보기</a>\n            </div>\n        </div>\n\n        <div id=\"saramin-section\" style=\"margin-bottom: 30px; border-top: 1px solid #e2e8f0; padding-top: 20px;\">\n            <h3 style=\"color: #c2410c; background-color: #fff7ed; padding: 8px 12px; border-radius: 6px; font-size: 1.2em; margin-top: 0; margin-bottom: 15px; border-left: 4px solid #f97316;\">🟠 사람인 추천 공고 (상위 5개)</h3>\n            ${saraminListHtml ? `<ul style=\"padding: 0; margin: 0;\">${saraminListHtml}</ul>` : `<p style=\"color: #94a3b8; font-size: 1.0em; margin: 0; padding: 12px;\">조건 매칭 공고가 없습니다.</p>`}\n            <div style=\"text-align: center; margin-top: 15px;\">\n                <a href=\"${saraminSearchLink}\" target=\"_blank\" style=\"display: inline-block; padding: 8px 16px; background-color: #f97316; color: white; text-decoration: none; font-weight: bold; font-size: 1.0em; border-radius: 6px;\">👉 사람인 결과 전체 보기</a>\n            </div>\n        </div>\n\n        <div id=\"jobkorea-section\" style=\"margin-bottom: 30px; border-top: 1px solid #e2e8f0; padding-top: 20px;\">\n            <h3 style=\"color: #854d0e; background-color: #fef9c3; padding: 8px 12px; border-radius: 6px; font-size: 1.2em; margin-top: 0; margin-bottom: 15px; border-left: 4px solid #eab308;\">🟡 잡코리아 추천 공고 (상위 5개)</h3>\n            ${jobkoreaListHtml ? `<ul style=\"padding: 0; margin: 0;\">${jobkoreaListHtml}</ul>` : `<p style=\"color: #94a3b8; font-size: 1.0em; margin: 0; padding: 12px;\">조건 매칭 공고가 없습니다.</p>`}\n            <div style=\"text-align: center; margin-top: 15px;\">\n                <a href=\"${jobkoreaSearchLink}\" target=\"_blank\" style=\"display: inline-block; padding: 8px 16px; background-color: #eab308; color: white; text-decoration: none; font-weight: bold; font-size: 1.0em; border-radius: 6px;\">👉 잡코리아 결과 전체 보기</a>\n            </div>\n        </div>\n\n        <div style=\"text-align: center; margin-top: 20px; font-size: 14px; border-top: 1px dashed #cbd5e1; padding-top: 15px;\">\n            <a href=\"${modifyLink}\" target=\"_blank\" style=\"color: #4f46e5; text-decoration: none; font-weight: bold;\">[내 조건 변경]</a> | \n            <a href=\"${unsubscribeLink}\" target=\"_blank\" style=\"color: #dc3545; text-decoration: underline; font-weight: bold;\">[수신 거부 (구독 취소)]</a>\n        </div>\n    </div>`;\n\n    return { status: \"success\", jobs: [ ...matchedWorknet, ...matchedIncruit, ...matchedSaramin, ...matchedJobkorea ], mail_body: mailBody };\n};",
+                        "packageJson": "{\n  \"dependencies\": {\n    \"axios\": \"^1.6.2\",\n    \"cheerio\": \"^1.0.0-rc.12\"\n  }\n}"
+                      },
+                      "errorHandlingOptions": {
+                        "retryOnFailure": {
+                          "value": false
+                        },
+                        "continueOnFailure": {
+                          "value": false
+                        }
+                      }
+                    },
+                    "nextAction": {
+                      "name": "step_5",
+                      "skip": false,
+                      "type": "PIECE",
+                      "valid": true,
+                      "settings": {
+                        "input": {
+                          "cc": [],
+                          "bcc": [],
+                          "auth": "{{connections['XeSFkr3B3CDV8GdcsjhZ0']}}",
+                          "body": "{{step_4['mail_body']}}",
+                          "draft": false,
+                          "subject": "AI 채용 알리미",
+                          "receiver": [
+                            "{{step_2['item']}}"
+                          ],
+                          "reply_to": [],
+                          "body_type": "html",
+                          "attachments": []
+                        },
+                        "pieceName": "@activepieces/piece-gmail",
+                        "actionName": "send_email",
+                        "sampleData": {},
+                        "pieceVersion": "0.12.5",
+                        "propertySettings": {
+                          "cc": {
+                            "type": "MANUAL"
+                          },
+                          "bcc": {
+                            "type": "MANUAL"
+                          },
+                          "body": {
+                            "type": "MANUAL"
+                          },
+                          "from": {
+                            "type": "MANUAL"
+                          },
+                          "draft": {
+                            "type": "MANUAL"
+                          },
+                          "subject": {
+                            "type": "MANUAL"
+                          },
+                          "receiver": {
+                            "type": "MANUAL"
+                          },
+                          "reply_to": {
+                            "type": "MANUAL"
+                          },
+                          "body_type": {
+                            "type": "MANUAL"
+                          },
+                          "attachments": {
+                            "type": "MANUAL"
+                          },
+                          "in_reply_to": {
+                            "type": "MANUAL"
+                          },
+                          "sender_name": {
+                            "type": "MANUAL"
+                          }
+                        },
+                        "errorHandlingOptions": {
+                          "retryOnFailure": {
+                            "value": false
+                          },
+                          "continueOnFailure": {
+                            "value": false
+                          }
+                        }
+                      },
+                      "displayName": "Send Email",
+                      "lastUpdatedDate": "2026-07-01T04:12:13.636Z"
+                    },
+                    "displayName": "Code",
+                    "lastUpdatedDate": "2026-07-01T04:12:13.647Z"
+                  },
+                  "displayName": "Get",
+                  "lastUpdatedDate": "2026-07-01T04:12:13.636Z"
+                },
+                "lastUpdatedDate": "2026-07-01T04:12:13.635Z"
+              },
+              "displayName": "Put",
+              "lastUpdatedDate": "2026-07-01T04:12:13.635Z"
+            },
+            "displayName": "Code",
+            "lastUpdatedDate": "2026-07-01T04:12:13.635Z"
+          },
+          "displayName": "Get",
+          "lastUpdatedDate": "2026-07-01T04:12:13.635Z"
+        },
+        "lastUpdatedDate": "2026-07-01T04:12:13.635Z",
+        "type": "PIECE_TRIGGER",
+        "settings": {
+          "propertySettings": {
+            "timezone": {
+              "type": "MANUAL"
+            },
+            "hour_of_the_day": {
+              "type": "MANUAL"
+            },
+            "run_on_weekends": {
+              "type": "MANUAL"
+            }
+          },
+          "pieceName": "@activepieces/piece-schedule",
+          "pieceVersion": "0.1.17",
+          "triggerName": "every_day",
+          "input": {
+            "timezone": "UTC",
+            "hour_of_the_day": 8,
+            "run_on_weekends": false
+          }
+        }
+      },
+      "valid": true,
+      "schemaVersion": "20",
+      "notes": []
+    }
+  ],
+  "status": "PUBLISHED"
+}
