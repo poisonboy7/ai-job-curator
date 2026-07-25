@@ -33,15 +33,11 @@ async function handleSubmit(e) {
     // 2. DOM 엘리먼트 값 추출
     const address = document.getElementById('user-address').value;
 
-    // 💡 [추가된 부분] 주소 누락 즉시 차단 (서버로 보내기도 전에 컷!)
     if (!address || address.trim() === '') {
-        alert('희망 기준 주소를 반드시 검색해서 입력해 주세요.');
+        alert('희망 근무 지역을 반드시 검색해서 입력해 주세요.');
         return;
     }
     
-    const latitude = document.getElementById('latitude').value;
-    const longitude = document.getElementById('longitude').value;
-    const maxDistance = document.getElementById('distance-range').value;
     const career = document.getElementById('career-filter').value;
     const education = document.getElementById('education-filter').value;
     const webhookUrl = '/api/sync';
@@ -92,9 +88,6 @@ async function handleSubmit(e) {
         const payload = {
             email: finalEmail,
             address: address,
-            latitude: parseFloat(latitude),
-            longitude: parseFloat(longitude),
-            max_distance_km: parseInt(maxDistance),
             career: career,
             education: education,
             resume: {
@@ -124,7 +117,7 @@ async function handleSubmit(e) {
             await delay(3500); 
             if (isCommunicationDone) return;
             overlayTitle.textContent = "구인 정보 매칭 중...";
-            overlayDesc.textContent = "설정하신 반경 및 경력 필터를 기반으로 실시간 데이터 매핑을 실행합니다.";
+            overlayDesc.textContent = "설정하신 지역, 경력 및 학력 필터를 기반으로 실시간 데이터 매핑을 실행합니다.";
 
             await delay(3500); 
             if (isCommunicationDone) return;
@@ -322,12 +315,7 @@ function toggleDropzoneContent(showDefault) {
     }
 }
 
-// 2. Distance range slider label update
-function updateDistanceVal(val) {
-    document.getElementById('distance-display').textContent = `${val} km`;
-}
-
-// 3. Kakao Postcode (우편번호 서비스) Integration
+// Kakao Postcode (우편번호 서비스) Integration
 function openAddressSearch() {
     try {
         console.log("Kakao Postcode API Popup Opening...");
@@ -355,8 +343,6 @@ function openAddressSearch() {
                     } else {
                         console.error("Target address input field (#user-address) not found!");
                     }
-                    
-                    simulateGeocoding(fullAddr);
                 } catch (innerError) {
                     console.error("Error during address processing:", innerError);
                     alert("주소 데이터를 가져오는 중 내부 오류가 발생했습니다. 개발자 도구(F12) 콘솔을 확인해 주세요.");
@@ -372,53 +358,7 @@ function openAddressSearch() {
     }
 }
 
-function simulateGeocoding(address) {
-    try {
-        if (!address) {
-            console.warn("simulateGeocoding received empty address");
-            return;
-        }
-        let lat = 37.5565;
-        let lon = 126.9780;
-        
-        if (address.includes('부산')) {
-            lat = 35.1796; lon = 129.0756;
-        } else if (address.includes('대구')) {
-            lat = 35.8714; lon = 128.6014;
-        } else if (address.includes('인천')) {
-            lat = 37.4563; lon = 126.7052;
-        } else if (address.includes('광주')) {
-            lat = 35.1595; lon = 126.8526;
-        } else if (address.includes('대전')) {
-            lat = 36.3504; lon = 127.3845;
-        } else if (address.includes('울산')) {
-            lat = 35.5384; lon = 129.3114;
-        } else if (address.includes('경기')) {
-            lat = 37.2636; lon = 127.0286;
-        } else if (address.includes('제주')) {
-            lat = 33.4996; lon = 126.5312;
-        }
-        
-        const seed = address.length % 10;
-        lat += (seed - 5) * 0.008;
-        lon += (seed - 5) * 0.008;
-        
-        const latInput = document.getElementById('latitude');
-        const lonInput = document.getElementById('longitude');
-        
-        if (latInput && lonInput) {
-            latInput.value = lat.toFixed(6);
-            lonInput.value = lon.toFixed(6);
-            console.log(`Geocoding Result -> Lat: ${lat.toFixed(6)}, Lon: ${lon.toFixed(6)}`);
-        } else {
-            console.error("Latitude/Longitude hidden inputs not found!");
-        }
-    } catch (err) {
-        console.error("Error in simulateGeocoding:", err);
-    }
-}
-
-// 4. Advanced Settings Toggle (Accordion)
+// Advanced Settings Toggle (Accordion)
 function toggleSettings() {
     const header = document.getElementById('settings-accordion-header');
     const content = document.getElementById('settings-accordion-content');
@@ -503,7 +443,6 @@ function resetForm() {
     closeOverlay();
     document.getElementById('matching-form').reset();
     clearFile();
-    updateDistanceVal(20); // 초기 자차 기준 디폴트값 동기화
     const savedUrl = localStorage.getItem('activepieces_webhook_url');
     const webhookInput = document.getElementById('webhook-url');
     if (savedUrl && webhookInput) {

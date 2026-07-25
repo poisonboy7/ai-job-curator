@@ -213,70 +213,11 @@ select option {
     color: var(--text-main);
 }
 
-/* Address Row Group */
-.address-row {
-    display: flex;
-    gap: 0.8rem;
-}
-
-.btn-secondary {
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(99, 102, 241, 0.2);
-    border-radius: 12px;
-    color: var(--primary-color);
-    padding: 0 1.5rem;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: var(--transition-smooth);
-}
-
-.btn-secondary:hover {
-    background: rgba(99, 102, 241, 0.05);
-    border-color: var(--primary-color);
-}
-
-/* Range Slider */
-.slider-container {
-    display: flex;
-    align-items: center;
-    gap: 1.2rem;
-}
-
-.range-slider {
-    flex-grow: 1;
-    -webkit-appearance: none;
-    appearance: none;
-    height: 6px;
-    border-radius: 5px;
-    background: rgba(99, 102, 241, 0.12);
-    outline: none;
-    transition: var(--transition-smooth);
-}
-
-.range-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: var(--primary-color);
-    cursor: pointer;
-    box-shadow: 0 0 10px var(--primary-glow);
-    transition: transform 0.15s ease-in-out;
-}
-
-.range-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
-}
-
-.slider-val {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--primary-color);
-    min-width: 60px;
-    text-align: right;
+.form-help {
+    margin-top: 0.65rem;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    line-height: 1.5;
 }
 
 /* Filter Flex Grid */
@@ -420,11 +361,5 @@ select option {
     .grid-2 {
         grid-template-columns: 1fr;
         gap: 1rem;
-    }
-    .address-row {
-        flex-direction: column;
-    }
-    .btn-secondary {
-        padding: 0.85rem;
     }
 }

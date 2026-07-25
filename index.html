@@ -80,20 +80,9 @@
 
             <!-- Kakao Address Input -->
             <div class="form-group">
-                <label for="user-address" class="form-label">희망 기준 주소</label>
-                <input type="text" id="user-address" class="input-field" style="width: 100%; text-align: center; cursor: pointer; background-color: #fff; font-weight: bold; color: #3b82f6; border: 2px dashed #cbd5e1; padding: 14px;" placeholder="🔍 여기를 클릭하여 주소를 검색하세요" readonly onclick="openAddressSearch()" required>
-                <!-- Hidden coordinate fields populated by Kakao API (simulated/geocoded in backend) -->
-                <input type="hidden" id="latitude" value="37.5665">
-                <input type="hidden" id="longitude" value="126.9780">
-            </div>
-
-            <!-- Distance Radius Slider -->
-            <div class="form-group">
-                <label for="distance-range" class="form-label">희망 근무 반경 (최대 직선 거리)</label>
-                <div class="slider-container">
-                    <input type="range" id="distance-range" class="range-slider" min="5" max="30" step="5" value="20" oninput="updateDistanceVal(this.value)">
-                    <span class="slider-val" id="distance-display">20 km</span>
-                </div>
+                <label for="user-address" class="form-label">희망 근무 지역</label>
+                <input type="text" id="user-address" class="input-field" style="width: 100%; text-align: center; cursor: pointer; background-color: #fff; font-weight: bold; color: #3b82f6; border: 2px dashed #cbd5e1; padding: 14px;" placeholder="🔍 여기를 클릭하여 근무 희망 지역을 검색하세요" readonly onclick="openAddressSearch()" required>
+                <p class="form-help">선택한 주소의 주요 시·구·군 지역명을 기준으로 공고를 찾습니다. 실제 거리 계산은 하지 않습니다.</p>
             </div>
 
             <!-- Career & Education Filters (Grid Layout) -->
