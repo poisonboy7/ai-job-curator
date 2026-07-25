@@ -1,6 +1,8 @@
 // Global variables for file handling
 let selectedFile = null;
 let extractedEmail = null; // 이력서에서 추출한 이메일 저장용
+let fileProcessingVersion = 0;
+let isProcessingFile = false;
 
 // Drag and drop event listeners
 const dropzone = document.getElementById('dropzone');
@@ -20,6 +22,11 @@ async function handleSubmit(e) {
     // 1. 파일 선택 여부 검증
     if (!selectedFile) {
         alert('분석할 이력서 파일을 업로드해 주세요.');
+        return;
+    }
+
+    if (isProcessingFile) {
+        alert('이력서 내용을 확인하고 있습니다. 잠시 후 다시 시도해 주세요.');
         return;
     }
     
@@ -93,7 +100,6 @@ async function handleSubmit(e) {
             resume: {
                 filename: selectedFile.name,
                 content_type: selectedFile.type,
-                data_base64: fileData.base64,
                 text_content: fileData.text 
             }
         };
@@ -208,12 +214,22 @@ function handleFileSelect(e) {
 async function processFile(file) {
     const validExtensions = ['pdf', 'txt'];
     const fileExtension = file.name.split('.').pop().toLowerCase();
+    const maxFileBytes = 3 * 1024 * 1024;
     
     if (!validExtensions.includes(fileExtension)) {
         alert('지원하지 않는 파일 형식입니다. PDF 또는 TXT 파일만 업로드 가능합니다.');
+        fileInput.value = '';
+        return;
+    }
+
+    if (file.size > maxFileBytes) {
+        alert('파일 크기는 3MB 이하만 업로드할 수 있습니다.');
+        fileInput.value = '';
         return;
     }
     
+    const processingVersion = ++fileProcessingVersion;
+    isProcessingFile = true;
     selectedFile = file;
     fileNameText.textContent = file.name;
     fileBadge.style.display = 'inline-flex';
@@ -222,6 +238,8 @@ async function processFile(file) {
     // 텍스트 추출 및 정규식 이메일 스캔
     try {
         const fileData = await getFileData(file);
+        if (processingVersion !== fileProcessingVersion) return;
+
         const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/;
         const match = fileData.text.match(emailRegex);
         
@@ -248,11 +266,18 @@ async function processFile(file) {
             alert("이력서 본문에서 이메일 주소를 찾지 못했습니다. 아래에 수신용 이메일을 직접 입력해 주세요.");
         }
     } catch(e) {
+        if (processingVersion !== fileProcessingVersion) return;
+
         extractedEmail = null;
         const emailGroup1 = document.getElementById('email-input-container');
         const emailGroup2 = document.getElementById('email-confirm-container');
         if(emailGroup1) emailGroup1.style.display = 'block';
         if(emailGroup2) emailGroup2.style.display = 'block';
+        alert('이력서 내용을 읽지 못했습니다. 다른 PDF 또는 TXT 파일을 선택해 주세요.');
+    } finally {
+        if (processingVersion === fileProcessingVersion) {
+            isProcessingFile = false;
+        }
     }
 }
 
@@ -261,6 +286,8 @@ function clearFile(e) {
         e.preventDefault();
         e.stopPropagation();
     }
+    fileProcessingVersion += 1;
+    isProcessingFile = false;
     selectedFile = null;
     extractedEmail = null; // 이메일 데이터 초기화
     fileInput.value = '';

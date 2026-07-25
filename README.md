@@ -47,7 +47,7 @@
 4. 폴더에 있는 **`Resume-Analyzer.yml`** 파일을 끌어다 놓습니다.
 5. 우측 상단 모델 설정에서 방금 깐 Ollama를 연결합니다.
    - Base URL: `http://host.docker.internal:11434`
-6. 앱을 발행(Publish)하고 **API 키**를 복사해 메모장에 적어둡니다.
+6. 앱을 발행(Publish)하고 **새 API 키**를 발급해 안전한 곳에 보관합니다. API 키는 GitHub나 공유 문서에 올리지 마세요.
 
 ---
 
@@ -62,9 +62,9 @@ AI와 크롤러, 이메일을 하나로 이어주는 공장 레일입니다.
 2. 인터넷 창을 열고 `http://localhost:8080` 에 접속해 계정을 만듭니다.
 3. 왼쪽 메뉴 **[Flows]**로 가서 **[Import Flow]**를 누릅니다.
 4. 폴더에 있는 JSON 파일 2개를 차례대로 불러옵니다.
-   - `1. 이력서 수신 및 구독 조건 등록.json`
-   - `2. 매일 아침 8시 맞춤 채용정보 메일 발송.json`
-5. 1번 플로우에서 **Send HTTP request** 노드를 클릭하고, 헤더에 아까 메모해 둔 Dify API 키를 넣습니다. (`Bearer 내키`)
+   - `이력서 수신 및 구독 조건 등록.json`
+   - `매일 아침 8시 맞춤 채용정보 메일 발송.json`
+5. 구독 등록 플로우에서 **Send HTTP request** 노드를 클릭하고, `Authorization` 헤더의 `REPLACE_WITH_NEW_DIFY_API_KEY` 부분을 새로 발급한 Dify API 키로 교체합니다. (`Bearer 새_API_키`)
 6. 맨 위 **Catch Webhook**을 누르고 생성된 URL 주소를 메모장에 적어둡니다.
 7. 2번 플로우에서 **Send Email (Gmail)** 노드를 클릭해 본인의 구글 계정을 연동해 줍니다.
 8. 두 플로우 모두 우측 상단의 **[Publish]** 버튼을 눌러 활성화합니다.
@@ -96,10 +96,22 @@ AI와 크롤러, 이메일을 하나로 이어주는 공장 레일입니다.
    ```
 2. 계속 Enter를 눌러서 1차 배포를 끝냅니다.
 3. [Vercel 홈페이지](https://vercel.com)에 로그인 후, 방금 만든 프로젝트로 들어갑니다.
-4. **[웹훅 주소(환경변수) 등록]**: 
+4. **[환경변수 등록]**:
    - Settings -> Environment Variables 메뉴로 이동
-   - Key 칸에 `WEBHOOK_URL` 입력, Value 칸에 **방금 ngrok으로 만든 웹훅 주소** 입력 후 Save
+   - `WEBHOOK_URL`: 방금 ngrok으로 만든 전체 Activepieces 웹훅 주소
+   - `ALLOWED_ORIGINS`: 배포한 사이트 주소(예: `https://프로젝트명.vercel.app`)
+   - 선택 설정: `RATE_LIMIT_MAX=10`, `RATE_LIMIT_WINDOW_MS=60000`, `MAX_BODY_BYTES=4500000`
    - 상단 메뉴의 'Deployments' -> 점 3개 버튼 -> 'Redeploy'를 눌러 재배포 (적용을 위해 필수!)
 5. **[과잉 보안 장치 끄기]**: 
    - Settings -> Security(또는 Deployment Protection) -> Vercel Authentication 항목 전체 끄기(OFF) 후 Save
 6. 마지막에 나오는 `https://[프로젝트명].vercel.app` 링크가 서비스 주소입니다! 접속해서 테스트해 보세요! 🎉
+
+---
+
+## 🔐 보안 주의사항
+
+- 이 저장소의 자동화 JSON에는 실제 Dify API 키가 들어 있지 않습니다. 플로우를 가져온 뒤 Activepieces 화면에서 새 키를 직접 입력하세요.
+- 과거에 공개 저장소에 올린 Dify API 키는 Dify에서 폐기하고 새로 발급하세요.
+- `.env` 파일, ngrok 인증 토큰, Gmail 연결 정보는 커밋하지 마세요.
+- `ALLOWED_ORIGINS`는 실제 배포 주소로 설정해야 외부 사이트의 무단 요청을 줄일 수 있습니다.
+- 서버리스 메모리 기반 요청 제한은 보조 장치입니다. 공개 서비스 규모가 커지면 Vercel Firewall 또는 외부 저장소 기반 제한을 추가하세요.
