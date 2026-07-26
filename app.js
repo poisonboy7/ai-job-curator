@@ -443,42 +443,8 @@ function resetForm() {
     closeOverlay();
     document.getElementById('matching-form').reset();
     clearFile();
-    const savedUrl = localStorage.getItem('activepieces_webhook_url');
-    const webhookInput = document.getElementById('webhook-url');
-    if (savedUrl && webhookInput) {
-        webhookInput.value = savedUrl;
-    }
 }
 
-// 페이지 초기 로드 시 저장된 URL이 있으면 불러오기
-document.addEventListener('DOMContentLoaded', () => {
-    const savedUrl = localStorage.getItem('activepieces_webhook_url');
-    const webhookInput = document.getElementById('webhook-url');
-    if (savedUrl && webhookInput) {
-        webhookInput.value = savedUrl;
-        console.log("로컬 스토리지에서 웹훅 URL을 불러왔습니다:", savedUrl);
-    }
-});
-
-// 웹훅 URL 저장 함수
-function saveWebhookUrl() {
-    const webhookInput = document.getElementById('webhook-url');
-    if (webhookInput) {
-        const url = webhookInput.value.trim();
-        if (!url) {
-            alert('웹훅 URL을 입력해 주세요.');
-            return;
-        }
-        try {
-            new URL(url);
-        } catch (_) {
-            alert('올바른 URL 형식이 아닙니다. 프로토콜(http:// 또는 https://)을 포함하여 다시 입력해 주세요.');
-            return;
-        }
-        localStorage.setItem('activepieces_webhook_url', url);
-        alert('웹훅 URL이 저장되었습니다! 이제 페이지를 새로고침하거나 다시 접속해도 입력한 주소가 유지됩니다.');
-    }
-}
 // 유저가 수동으로 다른 이메일 입력을 원할 때 호출되는 함수
 function overrideEmail() {
     extractedEmail = null; // AI가 추출했던 이메일 메모리에서 삭제

@@ -30,6 +30,22 @@ function isValidEmail(value) {
     return typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
+function normalizeSiteUrl(value) {
+    if (typeof value !== 'string' || !value.trim()) {
+        return null;
+    }
+
+    try {
+        const url = new URL(value.trim());
+        if (!['http:', 'https:'].includes(url.protocol)) {
+            return null;
+        }
+        return url.origin;
+    } catch {
+        return null;
+    }
+}
+
 export default async function handler(req, res) {
     res.setHeader('Cache-Control', 'no-store');
 
@@ -59,12 +75,7 @@ export default async function handler(req, res) {
     }
 
     const payload = req.body;
-    const serializedPayload = JSON.stringify(payload ?? {});
     const maxBodyBytes = getPositiveInteger(process.env.MAX_BODY_BYTES, 4_500_000);
-
-    if (Buffer.byteLength(serializedPayload, 'utf8') > maxBodyBytes) {
-        return res.status(413).json({ message: '업로드 데이터가 너무 큽니다.' });
-    }
 
     if (!payload || !isValidEmail(payload.email)) {
         return res.status(400).json({ message: '올바른 이메일 주소가 필요합니다.' });
@@ -83,6 +94,20 @@ export default async function handler(req, res) {
     const webhookUrl = process.env.WEBHOOK_URL;
     if (!webhookUrl) {
         return res.status(500).json({ message: '서버에 WEBHOOK_URL이 설정되지 않았습니다.' });
+    }
+
+    const publicSiteUrl = normalizeSiteUrl(process.env.PUBLIC_SITE_URL);
+    if (!isUnsubscribe && !publicSiteUrl) {
+        return res.status(500).json({ message: '서버에 올바른 PUBLIC_SITE_URL이 설정되지 않았습니다.' });
+    }
+
+    const forwardedPayload = publicSiteUrl
+        ? { ...payload, site_url: publicSiteUrl }
+        : payload;
+    const serializedPayload = JSON.stringify(forwardedPayload);
+
+    if (Buffer.byteLength(serializedPayload, 'utf8') > maxBodyBytes) {
+        return res.status(413).json({ message: '업로드 데이터가 너무 큽니다.' });
     }
 
     try {

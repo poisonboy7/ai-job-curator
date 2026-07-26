@@ -353,7 +353,7 @@
                     "settings": {
                       "input": {
                         "key": "user_{{trigger['body']['email']}}",
-                        "value": "{\n  \"email\": \"{{trigger['body']['email']}}\",\n  \"address\": \"{{trigger['body']['address']}}\",\n  \"career\": \"{{trigger['body']['career']}}\",\n  \"education\": \"{{trigger['body']['education']}}\",\n  \"primary_job\": \"{{step_2['primary_job']}}\",\n  \"primary_jobs\": \"{{step_2['primary_jobs']}}\",\n  \"core_skills\": \"{{step_2['core_skills']}}\",\n  \"ai_keywords\": \"{{step_2['ai_keywords']}}\"\n}",
+                        "value": "{\n  \"email\": \"{{trigger['body']['email']}}\",\n  \"address\": \"{{trigger['body']['address']}}\",\n  \"career\": \"{{trigger['body']['career']}}\",\n  \"education\": \"{{trigger['body']['education']}}\",\n  \"site_url\": \"{{trigger['body']['site_url']}}\",\n  \"primary_job\": \"{{step_2['primary_job']}}\",\n  \"primary_jobs\": \"{{step_2['primary_jobs']}}\",\n  \"core_skills\": \"{{step_2['core_skills']}}\",\n  \"ai_keywords\": \"{{step_2['ai_keywords']}}\"\n}",
                         "store_scope": "COLLECTION"
                       },
                       "pieceName": "@activepieces/piece-store",
